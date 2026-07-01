@@ -53,7 +53,10 @@ const state = {
   voices: [],
   currentKaraokeIndex: 0,
   karaokeTimer: null,
-  speed: "normal"
+  speed: "normal",
+  singleWordBlob: null,
+  singleWordBuffer: null,
+  singleWordUrl: null
 };
 
 init();
@@ -74,7 +77,13 @@ function bindEvents() {
   elements.stopBtn.addEventListener("click", stopReading);
   elements.resetBtn.addEventListener("click", resetEvaluation);
   elements.playExpectedBtn.addEventListener("click", playExpectedPronunciation);
-  elements.playRecordingBtn.addEventListener("click", () => state.recorder?.playRecording());
+  elements.playRecordingBtn.addEventListener("click", () => {
+    if (state.singleWordUrl) {
+      new Audio(state.singleWordUrl).play();
+    } else {
+      state.recorder?.playRecording();
+    }
+  });
   elements.retryWordBtn.addEventListener("click", retrySelectedWord);
   elements.providerSelect.addEventListener("change", refreshProvider);
   elements.customEndpoint.addEventListener("change", refreshProvider);
@@ -223,6 +232,9 @@ async function startReading() {
   state.transcript = "";
   state.audioBlob = null;
   state.audioBuffer = null;
+  state.singleWordBlob = null;
+  state.singleWordBuffer = null;
+  state.singleWordUrl = null;
   elements.startBtn.disabled = true;
   elements.stopBtn.disabled = false;
   elements.playRecordingBtn.disabled = true;
@@ -317,8 +329,10 @@ function selectWord(index) {
   elements.playExpectedBtn.disabled = false;
   elements.retryWordBtn.disabled = false;
 
-  if (state.audioBuffer) {
-    drawWaveformForWord(elements.waveformCanvas, state.audioBuffer, index, state.words.length, state.pronunciations[index]?.phonetic);
+  const buffer = state.singleWordBuffer || state.audioBuffer;
+  if (buffer) {
+    const isSingle = !!state.singleWordBuffer;
+    drawWaveformForWord(elements.waveformCanvas, buffer, isSingle ? 0 : index, isSingle ? 1 : state.words.length, state.pronunciations[index]?.phonetic);
   } else {
     drawEmptyWaveform(elements.waveformCanvas, "Graba tu lectura para ver la forma de onda de esta palabra.");
   }
@@ -394,6 +408,16 @@ async function retrySelectedWord() {
         setTimeout(done, 5000);
       });
 
+      const singleBlob = new Blob(audioChunks, { type: recorder.mimeType || "audio/webm" });
+      state.singleWordUrl = URL.createObjectURL(singleBlob);
+      state.singleWordBlob = singleBlob;
+      elements.playRecordingBtn.disabled = false;
+      try {
+        const arrayBuffer = await singleBlob.arrayBuffer();
+        const audioContext = new AudioContext();
+        state.singleWordBuffer = await audioContext.decodeAudioData(arrayBuffer.slice(0));
+      } catch (_) { /* waveform no disponible */ }
+
       if (stream) stream.getTracks().forEach((t) => t.stop());
       stream = null;
 
@@ -428,6 +452,9 @@ function resetEvaluation() {
   state.audioBlob = null;
   state.audioBuffer = null;
   state.audioUrl = null;
+  state.singleWordBlob = null;
+  state.singleWordBuffer = null;
+  state.singleWordUrl = null;
   state.selectedIndex = null;
   elements.selectedWordPanel.textContent = "No hay ninguna palabra seleccionada.";
   elements.selectedWordPanel.classList.add("empty");
