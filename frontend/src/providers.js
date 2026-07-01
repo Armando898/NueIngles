@@ -3250,7 +3250,7 @@ export class MockProvider extends AIProvider {
       .map((token) => {
         if (/^\s+$/.test(token) || /^[,.!?;:]+$/.test(token)) return token;
         const normalized = token.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        return fallbackTranslations.get(normalized) || token;
+        return fallbackTranslations.get(normalized) || fallbackTranslations.get(token.toLowerCase()) || token;
       })
       .join("")
       .replace(/\bi\b/g, "I")

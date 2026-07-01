@@ -804,7 +804,7 @@ function translateWithMockProvider(text) {
     .map((token) => {
       if (/^\s+$/.test(token) || /^[,.!?;:]+$/.test(token)) return token;
       const key = token.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      return mockTranslations.get(key) || token;
+      return mockTranslations.get(key) || mockTranslations.get(token.toLowerCase()) || token;
     })
     .join("")
     .replace(/\bi\b/g, "I")
