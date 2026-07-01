@@ -257,7 +257,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
   text-align: left;
   color: var(--text);
   box-shadow: none;
-  white-space: nowrap;
+  min-width: 0;
 }
 
 .word-card:hover {
@@ -377,6 +377,10 @@ canvas {
   color: var(--muted);
   padding: 0 1rem 2.5rem;
   text-align: center;
+}
+
+@media (min-width: 801px) {
+  .word-card { white-space: nowrap; }
 }
 
 @media (max-width: 800px) {
