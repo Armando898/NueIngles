@@ -553,3 +553,98 @@ function autocorrelate(samples) {
   }
   return r;
 }
+
+export function drawReferenceWaveform(canvas, phonetic) {
+  const ctx = canvas.getContext("2d");
+  const { width, height } = canvas;
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, width, height);
+
+  if (!phonetic) {
+    ctx.fillStyle = "#64708a";
+    ctx.font = "18px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("Selecciona una palabra para ver la referencia.", width / 2, height / 2 - 16);
+    return;
+  }
+
+  const pad = 10;
+  const labelH = 16;
+  const specY = pad;
+  const specH = height - pad - labelH;
+  const rect = { x: 0, y: specY, w: width, h: specH };
+
+  drawBackground(ctx, width, height);
+
+  const syllables = phonetic.split(/[\s-]+/).filter(Boolean);
+  const formantMap = getVowelFormantMap();
+
+  const vowelFormants = [];
+  for (const syl of syllables) {
+    const vowel = syl.replace(/[^aáeéiíoóuú]/gi, "").toLowerCase();
+    if (vowel && formantMap[vowel]) {
+      vowelFormants.push(formantMap[vowel]);
+    }
+  }
+
+  const sr = 16000;
+  const nyquist = sr / 2;
+  const freqBins = 512;
+  const numFrames = Math.max(20, syllables.length * 10);
+
+  const imageData = ctx.createImageData(freqBins, numFrames);
+  for (let f = 0; f < freqBins; f++) {
+    const freq = (f / freqBins) * nyquist;
+    const isFormant = vowelFormants.some(
+      (fmap) => Math.abs(freq - fmap.f1) < 120
+    );
+    for (let t = 0; t < numFrames; t++) {
+      const idx = (t * freqBins + f) * 4;
+      if (isFormant) {
+        imageData.data[idx] = 200;
+        imageData.data[idx + 1] = 220;
+        imageData.data[idx + 2] = 255;
+        imageData.data[idx + 3] = 60;
+      } else {
+        imageData.data[idx + 3] = 0;
+      }
+    }
+  }
+
+  const tempCanvas = document.createElement("canvas");
+  tempCanvas.width = freqBins;
+  tempCanvas.height = numFrames;
+  const tempCtx = tempCanvas.getContext("2d");
+  tempCtx.putImageData(imageData, 0, 0);
+
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(tempCanvas, rect.x, rect.y, rect.w, rect.h);
+
+  for (const fmap of vowelFormants) {
+    const fy = rect.y + (1 - fmap.f1 / nyquist) * rect.h;
+    ctx.strokeStyle = "#c93342";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(rect.x, fy);
+    ctx.lineTo(rect.x + rect.w, fy);
+    ctx.stroke();
+    ctx.fillStyle = "#c93342";
+    ctx.font = "10px system-ui";
+    ctx.textAlign = "left";
+    ctx.fillText(`F1 ${fmap.f1} Hz`, rect.x + 4, fy - 3);
+    ctx.setLineDash([]);
+  }
+
+  const sylW = rect.w / Math.max(syllables.length, 1);
+  ctx.fillStyle = "rgba(36, 70, 216, 0.06)";
+  syllables.forEach((_, i) => {
+    if (i % 2 === 1) ctx.fillRect(rect.x + i * sylW, rect.y, sylW, rect.h);
+  });
+
+  ctx.fillStyle = "#64708a";
+  ctx.font = "10px system-ui";
+  ctx.textAlign = "left";
+  ctx.fillText("Espectrograma de referencia", 8, height - 2);
+}

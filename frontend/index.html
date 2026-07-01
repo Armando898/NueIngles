@@ -112,9 +112,19 @@
 
     <section class="card" aria-labelledby="feedback-title">
       <h2 id="feedback-title">4. Revisión de palabras seleccionadas</h2>
-      <p class="hint">Selecciona una palabra para escuchar un ejemplo y ver su forma de onda aproximada dentro de la grabación.</p>
+      <p class="hint">Selecciona una palabra para escuchar un ejemplo y comparar su forma de onda.</p>
       <div id="selectedWordPanel" class="selected-word-panel empty">No hay ninguna palabra seleccionada.</div>
-      <canvas id="waveformCanvas" width="900" height="430" aria-label="Análisis de voz: forma de onda, espectrograma, tono y formantes"></canvas>
+      <div class="waveform-compare">
+        <div class="waveform-group" id="refGroup">
+          <span class="waveform-label">Pronunciación correcta</span>
+          <canvas id="refWaveformCanvas" width="900" height="380" aria-label="Forma de onda de referencia de la pronunciación correcta"></canvas>
+        </div>
+        <div class="waveform-group" id="userGroup">
+          <span class="waveform-label">Tu grabación</span>
+          <canvas id="waveformCanvas" width="900" height="380" aria-label="Forma de onda de tu grabación"></canvas>
+          <button id="expandWaveformBtn" class="secondary-button expand-btn" type="button" disabled>🔍 Ampliar</button>
+        </div>
+      </div>
       <div class="actions wrap-actions">
         <button id="playExpectedBtn" type="button" disabled>Escuchar ejemplo correcto</button>
         <button id="playRecordingBtn" class="secondary-button" type="button" disabled>Escuchar mi grabación</button>

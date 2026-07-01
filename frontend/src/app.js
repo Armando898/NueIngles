@@ -1,6 +1,6 @@
 import { createProvider, getWords, cleanWord } from "./providers.js";
 import { RecorderController, decodeAudioBlob, speakWord, loadVoices, chooseVoice } from "./audio.js";
-import { drawEmptyWaveform, drawWaveformForWord } from "./waveform.js";
+import { drawEmptyWaveform, drawWaveformForWord, drawReferenceWaveform } from "./waveform.js";
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -19,6 +19,10 @@ const elements = {
   recordingStatus: $("#recordingStatus"),
   selectedWordPanel: $("#selectedWordPanel"),
   waveformCanvas: $("#waveformCanvas"),
+  refWaveformCanvas: $("#refWaveformCanvas"),
+  expandWaveformBtn: $("#expandWaveformBtn"),
+  refGroup: $("#refGroup"),
+  userGroup: $("#userGroup"),
   playExpectedBtn: $("#playExpectedBtn"),
   playRecordingBtn: $("#playRecordingBtn"),
   retryWordBtn: $("#retryWordBtn"),
@@ -97,6 +101,10 @@ function bindEvents() {
     renderVoiceOptions(true);
   });
   elements.toggleConfig.addEventListener("click", toggleConfigPanel);
+  elements.expandWaveformBtn.addEventListener("click", toggleWaveformExpand);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && elements.userGroup.classList.contains("fullscreen")) toggleWaveformExpand();
+  });
   elements.speedControls.addEventListener("click", (e) => {
     const btn = e.target.closest(".speed-btn");
     if (!btn) return;
@@ -329,15 +337,33 @@ function selectWord(index) {
   elements.playExpectedBtn.disabled = false;
   elements.retryWordBtn.disabled = false;
 
+  drawReferenceWaveform(elements.refWaveformCanvas, pronunciation);
+
   const buffer = state.singleWordBuffer || state.audioBuffer;
   if (buffer) {
     const isSingle = !!state.singleWordBuffer;
-    drawWaveformForWord(elements.waveformCanvas, buffer, isSingle ? 0 : index, isSingle ? 1 : state.words.length, state.pronunciations[index]?.phonetic);
+    drawWaveformForWord(elements.waveformCanvas, buffer, isSingle ? 0 : index, isSingle ? 1 : state.words.length, pronunciation);
+    elements.expandWaveformBtn.disabled = false;
   } else {
     drawEmptyWaveform(elements.waveformCanvas, "Graba tu lectura para ver la forma de onda de esta palabra.");
+    elements.expandWaveformBtn.disabled = true;
   }
 
   renderWordGrid();
+}
+
+function toggleWaveformExpand() {
+  const group = elements.userGroup;
+  const isExpanded = group.classList.contains("fullscreen");
+  if (isExpanded) {
+    group.classList.remove("fullscreen");
+    elements.expandWaveformBtn.textContent = "🔍 Ampliar";
+  } else {
+    group.classList.add("fullscreen");
+    elements.expandWaveformBtn.textContent = "✕ Cerrar";
+    elements.waveformCanvas.style.maxWidth = "95vw";
+    elements.waveformCanvas.style.maxHeight = "85vh";
+  }
 }
 
 function playExpectedPronunciation() {
@@ -465,6 +491,9 @@ function resetEvaluation() {
   renderWordGrid();
   renderKaraokeLine();
   drawEmptyWaveform(elements.waveformCanvas);
+  drawEmptyWaveform(elements.refWaveformCanvas);
+  elements.expandWaveformBtn.disabled = true;
+  if (elements.userGroup.classList.contains("fullscreen")) toggleWaveformExpand();
   updateResults();
 }
 
