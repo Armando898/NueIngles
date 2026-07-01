@@ -92,6 +92,10 @@ async function translateSpanishToEnglish(text, providerOpt, apiKeyOpt) {
     return translateWithGenericRest(text);
   }
 
+  if (provider === "libretranslate") {
+    return translateWithLibreTranslate(text);
+  }
+
   return translateWithMockProvider(text);
 }
 
@@ -810,6 +814,23 @@ function translateWithMockProvider(text) {
     .replace(/\bi\b/g, "I")
     .replace(/\benglish\b/gi, "English")
     .replace(/\s+([,.!?;:])/g, "$1");
+}
+
+async function translateWithLibreTranslate(text) {
+  const url = process.env.LIBRETRANSLATE_URL || "https://libretranslate.de/translate";
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ q: text, source: "es", target: "en", format: "text" })
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`LibreTranslate respondió ${response.status}: ${err.slice(0, 300)}`);
+  }
+
+  const data = await response.json();
+  return data.translatedText || "";
 }
 
 async function translateWithGemini(text, apiKey) {

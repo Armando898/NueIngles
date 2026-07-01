@@ -27,6 +27,7 @@
           Proveedor de IA
           <select id="providerSelect">
             <option value="mock">◎ Demo local — funciona sin llave</option>
+            <option value="libretranslate">◎ LibreTranslate — traductor neuronal, sin llave</option>
             <option value="backend">◎ Servidor local (backend)</option>
             <option disabled>─ Con API key (gratis) ─</option>
             <option value="gemini">Google Gemini</option>
@@ -78,7 +79,7 @@
         <button id="translateBtn" type="button">Traducir al inglés</button>
         <button id="loadExampleBtn" class="secondary-button" type="button">Cargar ejemplo</button>
       </div>
-      <p class="hint">Las opciones "Demo local" y "Servidor local" funcionan sin ninguna clave. Los demás proveedores son gratuitos pero requieren registrarte una vez para obtener una API key.</p>
+      <p class="hint">"Demo local" y "LibreTranslate" funcionan sin ninguna clave. Los demás proveedores son gratuitos pero requieren registrarte una vez para obtener una API key en el servidor.</p>
     </section>
 
     <section class="card" aria-labelledby="translation-title">
