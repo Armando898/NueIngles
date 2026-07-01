@@ -128,10 +128,17 @@ function getProviderConfig() {
   };
 }
 
+const CLOUD_PROVIDERS = ["gemini", "groq", "deepseek", "moonshot", "openai"];
+
 function refreshProvider() {
   const provider = elements.providerSelect.value;
   elements.endpointField.style.display = provider === "generic" ? "block" : "none";
-  elements.apiKeyField.style.display = provider === "generic" ? "block" : "none";
+  elements.apiKeyField.style.display = provider === "generic" || CLOUD_PROVIDERS.includes(provider) ? "block" : "none";
+  if (CLOUD_PROVIDERS.includes(provider)) {
+    elements.apiToken.placeholder = "Tu API key de " + provider.charAt(0).toUpperCase() + provider.slice(1);
+  } else {
+    elements.apiToken.placeholder = "Solo para API personalizada";
+  }
   state.provider = createProvider(getProviderConfig());
 }
 
