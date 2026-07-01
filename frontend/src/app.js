@@ -34,7 +34,8 @@ const elements = {
   similarVoice: $("#similarVoice"),
   voiceSelect: $("#voiceSelect"),
   toggleConfig: $("#toggleConfig"),
-  configPanel: $("#configPanel")
+  configPanel: $("#configPanel"),
+  speedControls: $("#speedControls")
 };
 
 const state = {
@@ -51,7 +52,8 @@ const state = {
   audioUrl: null,
   voices: [],
   currentKaraokeIndex: 0,
-  karaokeTimer: null
+  karaokeTimer: null,
+  speed: "normal"
 };
 
 init();
@@ -86,6 +88,17 @@ function bindEvents() {
     renderVoiceOptions(true);
   });
   elements.toggleConfig.addEventListener("click", toggleConfigPanel);
+  elements.speedControls.addEventListener("click", (e) => {
+    const btn = e.target.closest(".speed-btn");
+    if (!btn) return;
+    elements.speedControls.querySelectorAll(".speed-btn").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    state.speed = btn.dataset.speed;
+    if (state.karaokeTimer) {
+      stopKaraokeTimer();
+      startKaraokeTimer();
+    }
+  });
 }
 
 function getProviderConfig() {
@@ -265,7 +278,9 @@ async function handleAudioReady({ blob, url, transcript }) {
 
 function startKaraokeTimer() {
   stopKaraokeTimer();
-  const interval = Math.max(650, Math.min(1300, 5000 / Math.max(state.words.length, 1)));
+  const base = Math.max(650, Math.min(1300, 5000 / Math.max(state.words.length, 1)));
+  const speedFactor = { slow: 1.8, normal: 1.0, fast: 0.55 }[state.speed] || 1.0;
+  const interval = base * speedFactor;
   state.karaokeTimer = setInterval(() => {
     state.currentKaraokeIndex = Math.min(state.currentKaraokeIndex + 1, state.words.length - 1);
     renderKaraokeLine();

@@ -181,6 +181,36 @@ button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
   color: #fff;
 }
 
+.speed-controls {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 0.5rem 0;
+}
+
+.speed-btn {
+  padding: 0.35rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: 1.5rem;
+  background: #fff;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.speed-btn:hover {
+  border-color: var(--primary);
+  background: #f0f3ff;
+}
+
+.speed-btn.active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+
 .danger-button { background: var(--error); }
 .danger-button:hover { background: #a92734; }
 
