@@ -899,7 +899,7 @@ const mockTranslations = new Map([
   ["control", "control"],
   ["circuito", "circuit"],
   ["cable", "cable"],
-  ["cables", "cables"],
+  ["cables", "wires"],
   ["conexión", "connection"],
   ["conexion", "connection"],
   ["conectar", "to connect"],

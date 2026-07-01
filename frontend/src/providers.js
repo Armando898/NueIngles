@@ -3348,7 +3348,7 @@ const fallbackTranslations = new Map([
   ["circuito", "circuit"],
   ["circuitos", "circuits"],
   ["cable", "cable"],
-  ["cables", "cables"],
+  ["cables", "wires"],
   ["conexión", "connection"],
   ["conexion", "connection"],
   ["conectar", "to connect"],
