@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>English Pronunciation Coach</title>
+  <link rel="stylesheet" href="./src/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">Aplicación web de práctica de inglés</p>
+      <h1>English Pronunciation Coach</h1>
+      <p class="subtitle">Traduce textos en español, practica la pronunciación en inglés y revisa palabra por palabra.</p>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="card config-card" aria-labelledby="config-title">
+      <div class="card-title-row">
+        <h2 id="config-title">Configuración de IA y voz</h2>
+        <button class="ghost-button" id="toggleConfig" type="button">Ocultar</button>
+      </div>
+
+      <div id="configPanel" class="config-grid">
+        <label>
+          Proveedor de IA
+          <select id="providerSelect">
+            <option value="mock">◎ Demo local — funciona sin llave</option>
+            <option value="backend">◎ Servidor local (backend)</option>
+            <option disabled>─ Con API key (gratis) ─</option>
+            <option value="gemini">Google Gemini</option>
+            <option value="groq">Groq (rápido)</option>
+            <option value="deepseek">DeepSeek (China)</option>
+            <option value="moonshot">Moonshot / Kimi (China)</option>
+            <option value="openai">OpenAI</option>
+            <option disabled>─ Avanzado ─</option>
+            <option value="generic">API personalizada</option>
+          </select>
+        </label>
+
+        <label id="endpointField" style="display:none">
+          Endpoint personalizado
+          <input id="customEndpoint" type="url" placeholder="https://tu-api.com/translate" />
+        </label>
+
+        <label id="apiKeyField" style="display:none">
+          API Key
+          <input id="apiToken" type="password" autocomplete="off" placeholder="Solo para API personalizada" />
+        </label>
+
+        <label>
+          Perfil vocal
+          <div class="voice-buttons" id="voiceProfileGroup">
+            <button type="button" class="voice-btn" data-profile="male">Masculino</button>
+            <button type="button" class="voice-btn active" data-profile="female">Femenino</button>
+            <button type="button" class="voice-btn" data-profile="neutral">Neutro</button>
+          </div>
+          <input id="voiceProfile" type="hidden" value="female" />
+        </label>
+
+        <label class="checkbox-label">
+          <input id="similarVoice" type="checkbox" checked />
+          Usar una voz de referencia con características vocales similares si el sistema lo permite
+        </label>
+
+        <label>
+          Voz de referencia disponible
+          <select id="voiceSelect"></select>
+        </label>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="input-title">
+      <h2 id="input-title">1. Texto en español</h2>
+      <textarea id="sourceText" rows="8" placeholder="Escribe o pega aquí el texto en español..."></textarea>
+      <div class="actions">
+        <button id="translateBtn" type="button">Traducir al inglés</button>
+        <button id="loadExampleBtn" class="secondary-button" type="button">Cargar ejemplo</button>
+      </div>
+      <p class="hint">Las opciones "Demo local" y "Servidor local" funcionan sin ninguna clave. Los demás proveedores son gratuitos pero requieren registrarte una vez para obtener una API key.</p>
+    </section>
+
+    <section class="card" aria-labelledby="translation-title">
+      <h2 id="translation-title">2. Traducción y pronunciación</h2>
+      <div id="translationStatus" class="status" aria-live="polite"></div>
+      <div id="translatedText" class="translation-box empty">La traducción aparecerá aquí.</div>
+      <div id="wordGrid" class="word-grid" aria-label="Palabras traducidas con pronunciación"></div>
+    </section>
+
+    <section class="card" aria-labelledby="reading-title">
+      <h2 id="reading-title">3. Lectura tipo karaoke</h2>
+      <div id="karaokeLine" class="karaoke-line">Traduce un texto para empezar la lectura guiada.</div>
+      <div class="actions wrap-actions">
+        <button id="startBtn" type="button" disabled>Iniciar lectura</button>
+        <button id="stopBtn" class="danger-button" type="button" disabled>Detener</button>
+        <button id="resetBtn" class="secondary-button" type="button" disabled>Reiniciar evaluación</button>
+      </div>
+      <div class="meter-row">
+        <span>Estado:</span>
+        <strong id="recordingStatus">Sin grabar</strong>
+      </div>
+      <p class="hint">La aplicación solicitará permiso para usar el micrófono antes de iniciar la grabación.</p>
+    </section>
+
+    <section class="card" aria-labelledby="feedback-title">
+      <h2 id="feedback-title">4. Revisión de palabras seleccionadas</h2>
+      <p class="hint">Selecciona una palabra para escuchar un ejemplo y ver su forma de onda aproximada dentro de la grabación.</p>
+      <div id="selectedWordPanel" class="selected-word-panel empty">No hay ninguna palabra seleccionada.</div>
+      <canvas id="waveformCanvas" width="900" height="430" aria-label="Análisis de voz: forma de onda, espectrograma, tono y formantes"></canvas>
+      <div class="actions wrap-actions">
+        <button id="playExpectedBtn" type="button" disabled>Escuchar ejemplo correcto</button>
+        <button id="playRecordingBtn" class="secondary-button" type="button" disabled>Escuchar mi grabación</button>
+        <button id="retryWordBtn" class="secondary-button" type="button" disabled>Repetir palabra</button>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="results-title">
+      <h2 id="results-title">5. Resultados</h2>
+      <div id="results" class="results-grid">
+        <div><span>Total evaluadas</span><strong>0</strong></div>
+        <div><span>Correctas</span><strong>0</strong></div>
+        <div><span>Con errores</span><strong>0</strong></div>
+        <div><span>Precisión</span><strong>0%</strong></div>
+      </div>
+      <div id="practiceList" class="practice-list"></div>
+    </section>
+  </main>
+
+  <footer class="footer-note">
+    <p>Prototipo modular: las funciones reales de traducción, análisis fonético avanzado y voz sintética pueden conectarse a cualquier proveedor de IA mediante adaptadores.</p>
+  </footer>
+
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>
