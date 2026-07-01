@@ -1106,6 +1106,34 @@ const mockTranslations = new Map([
   ["practicar", "to practice"],
   ["pronunciación", "pronunciation"],
   ["confianza", "confidence"],
+  ["deber", "must"],
+  ["debo", "I must"],
+  ["debes", "you must"],
+  ["debe", "must"],
+  ["debemos", "we must"],
+  ["deben", "they must"],
+  ["debía", "had to"],
+  ["debia", "had to"],
+  ["debido", "had to"],
+  ["debería", "should"],
+  ["deberia", "should"],
+  ["deberías", "should"],
+  ["deberias", "should"],
+  ["deberíamos", "should"],
+  ["deberian", "should"],
+  ["deberían", "should"],
+  ["revisarse", "be checked"],
+  ["revisar", "to check"],
+  ["reviso", "I check"],
+  ["revisas", "you check"],
+  ["revisa", "checks"],
+  ["revisamos", "we check"],
+  ["revisan", "they check"],
+  ["revisé", "I checked"],
+  ["revisó", "checked"],
+  ["revisado", "checked"],
+  ["revisión", "review"],
+  ["revision", "review"],
 ]);
 
 function translateWithMockProvider(text) {
@@ -1123,7 +1151,14 @@ function translateWithMockProvider(text) {
     .map((token) => {
       if (/^\s+$/.test(token) || /^[,.!?;:]+$/.test(token)) return token;
       const key = token.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      return mockTranslations.get(key) || mockTranslations.get(token.toLowerCase()) || token;
+      let result = mockTranslations.get(key) || mockTranslations.get(token.toLowerCase());
+      if (!result) {
+        const stripped = key.replace(/se$|me$|te$|nos$|os$|lo$|la$|los$|las$/, "");
+        if (stripped !== key) {
+          result = mockTranslations.get(stripped);
+        }
+      }
+      return result || token;
     })
     .join("")
     .replace(/\bi\b/g, "I")
