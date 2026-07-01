@@ -262,6 +262,16 @@ button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 .karaoke-word.correct { background: var(--success-bg); color: var(--success); }
 .karaoke-word.incorrect { background: var(--error-bg); color: var(--error); }
 
+.karaoke-pron {
+  min-height: 1.8rem;
+  text-align: center;
+  font-size: clamp(1.1rem, 2.2vw, 1.35rem);
+  color: var(--text-secondary);
+  padding: 0.3rem 0.5rem;
+  letter-spacing: 0.02em;
+  font-style: italic;
+}
+
 .meter-row {
   margin-top: 1rem;
   display: flex;

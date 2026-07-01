@@ -12,6 +12,7 @@ const elements = {
   translationStatus: $("#translationStatus"),
   wordGrid: $("#wordGrid"),
   karaokeLine: $("#karaokeLine"),
+  karaokePron: $("#karaokePron"),
   startBtn: $("#startBtn"),
   stopBtn: $("#stopBtn"),
   resetBtn: $("#resetBtn"),
@@ -132,6 +133,7 @@ async function translateText() {
     state.pronunciations = await state.provider.getPronunciations(state.words);
     state.evaluations = state.words.map((word, index) => ({ index, word, status: "pending", score: 0, heard: "" }));
     state.selectedIndex = null;
+    state.currentKaraokeIndex = 0;
     state.transcript = "";
     renderTranslation();
     renderWordGrid();
@@ -177,6 +179,7 @@ function renderWordGrid() {
 function renderKaraokeLine() {
   if (!state.words.length) {
     elements.karaokeLine.textContent = "Traduce un texto para empezar la lectura guiada.";
+    elements.karaokePron.textContent = "";
     return;
   }
 
@@ -185,6 +188,15 @@ function renderKaraokeLine() {
     const current = index === state.currentKaraokeIndex ? "current" : "";
     return `<span class="karaoke-word ${evaluation} ${current}">${escapeHtml(word)}</span>`;
   }).join(" ");
+
+  const idx = state.currentKaraokeIndex;
+  if (idx >= 0 && idx < state.words.length) {
+    const pron = state.pronunciations[idx]?.phonetic || "";
+    const word = state.words[idx];
+    elements.karaokePron.innerHTML = pron ? `<span class="word">${escapeHtml(word)}</span> → <span class="phonetic">${escapeHtml(pron)}</span>` : "";
+  } else {
+    elements.karaokePron.textContent = "";
+  }
 }
 
 async function startReading() {
@@ -267,6 +279,8 @@ function stopKaraokeTimer() {
 
 function selectWord(index) {
   state.selectedIndex = index;
+  state.currentKaraokeIndex = index;
+  renderKaraokeLine();
   const word = state.words[index];
   const pronunciation = state.pronunciations[index]?.phonetic || "";
   const evaluation = state.evaluations[index] || { status: "pending", score: 0, heard: "" };
