@@ -6485,7 +6485,15 @@ const simplifiedPronunciations = new Map([
   ["require", "ri-kuáier"],
   ["retire", "ri-táier"],
   ["inspired", "in-spáierd"],
-  ["inspiring", "in-spái-ring"]
+  ["inspiring", "in-spái-ring"],
+  ["quiet", "kuáiet"],
+  ["quite", "kuáit"],
+  ["quit", "kuít"],
+  ["quote", "kuóut"],
+  ["queen", "kuíin"],
+  ["question", "kués-chon"],
+  ["quick", "kuík"],
+  ["quickly", "kuík-li"]
 ]);
 
 export function getWords(text) {
@@ -6655,6 +6663,7 @@ export function getSimplifiedPronunciation(word) {
   pron = pron.replace(/ar\b/gi, "ar");
 
   // Consonant substitutions for Spanish speakers
+  pron = pron.replace(/qu/gi, "ku");
   pron = pron.replace(/th/gi, "z");
   pron = pron.replace(/sh/gi, "sh");
   pron = pron.replace(/ch/gi, "ch");
