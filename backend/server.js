@@ -56,7 +56,7 @@ const FREE_PROVIDERS = {
   },
   deepseek: {
     key: () => process.env.DEEPSEEK_API_KEY,
-    translate: (text, key) => translateWithOpenAICompatible(text, key, "https://api.deepseek.com/v1", "deepseek-chat")
+    translate: (text, key) => translateWithOpenAICompatible(text, key, "https://api.deepseek.com", "deepseek-v4-flash")
   },
   moonshot: {
     key: () => process.env.MOONSHOT_API_KEY,

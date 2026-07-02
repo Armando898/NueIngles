@@ -6560,7 +6560,11 @@ export class BackendProvider extends AIProvider {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
     });
-    if (!response.ok) throw new Error(`Backend respondió ${response.status}`);
+    if (!response.ok) {
+      let detail = "";
+      try { const err = await response.json(); detail = err.error || ""; } catch (_) {}
+      throw new Error(`Backend respondió ${response.status}${detail ? ": " + detail : ""}`);
+    }
     const data = await response.json();
     return data.translation;
   }
