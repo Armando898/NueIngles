@@ -1,6 +1,6 @@
 import { createProvider, getWords, cleanWord } from "./providers.js";
 import { RecorderController, decodeAudioBlob, speakWord, loadVoices, chooseVoice } from "./audio.js";
-import { drawEmptyWaveform, drawWaveformForWord, drawReferenceWaveform, drawPlaybackCursor, drawSimpleWaveform } from "./waveform.js";
+import { drawEmptyWaveform, drawWaveformForWord, drawReferenceWaveform, drawPlaybackCursor, drawTimeline } from "./waveform.js";
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -380,14 +380,17 @@ function selectWord(index) {
 
   const buffer = state.singleWordBuffer || state.audioBuffer;
   resizeCanvasForDisplay();
-  if (buffer) {
-    const isSingle = !!state.singleWordBuffer;
-    drawWaveformForWord(elements.waveformCanvas, buffer, isSingle ? 0 : index, isSingle ? 1 : state.words.length, pronunciation);
-    cacheWaveform();
-    elements.expandWaveformBtn.disabled = false;
-  } else if (getPlaybackUrl()) {
-    drawSimpleWaveform(elements.waveformCanvas, state.words.length, index);
-    state.waveformCache = null;
+  const hasAudio = !!getPlaybackUrl();
+  if (hasAudio) {
+    drawTimeline(elements.waveformCanvas, state.words, index, state.audioDuration);
+    const buffer = state.singleWordBuffer || state.audioBuffer;
+    if (buffer) {
+      const isSingle = !!state.singleWordBuffer;
+      drawWaveformForWord(elements.waveformCanvas, buffer, isSingle ? 0 : index, isSingle ? 1 : state.words.length, pronunciation);
+      cacheWaveform();
+    } else {
+      state.waveformCache = null;
+    }
     elements.expandWaveformBtn.disabled = false;
   } else {
     drawEmptyWaveform(elements.waveformCanvas, "Graba tu lectura para ver la forma de onda de esta palabra.");
@@ -398,7 +401,8 @@ function selectWord(index) {
   renderWordGrid();
 }
 
-function toggleWaveformExpand() {
+function toggleWaveformExpand(e) {
+  if (e) e.stopPropagation();
   const group = elements.userGroup;
   const isExpanded = group.classList.contains("fullscreen");
   if (isExpanded) {
@@ -406,6 +410,7 @@ function toggleWaveformExpand() {
     elements.expandWaveformBtn.textContent = "Ampliar";
     document.body.style.overflow = "";
   } else {
+    if (state.playbackAudio) stopPlayback();
     group.classList.add("fullscreen");
     elements.expandWaveformBtn.textContent = "Cerrar";
     document.body.style.overflow = "hidden";
@@ -677,6 +682,9 @@ function startPlayback() {
   const url = getPlaybackUrl();
   if (!url) return;
   state.playbackAudio = new Audio(url);
+  state.playbackAudio.addEventListener("loadedmetadata", () => {
+    state.audioDuration = state.playbackAudio.duration;
+  });
   state.playbackAudio.addEventListener("ended", stopPlayback);
   state.playbackAudio.play().catch(() => {});
   elements.playBtn.textContent = "\u23F8";
@@ -688,8 +696,10 @@ function startPlayback() {
       elements.timeDisplay.textContent = `${formatTime(ct)} / ${formatTime(dur)}`;
       if (state.waveformCache) {
         restoreWaveform();
-        drawPlaybackCursor(elements.waveformCanvas, ct / dur);
+      } else {
+        drawTimeline(elements.waveformCanvas, state.words, state.selectedIndex, state.audioDuration);
       }
+      drawPlaybackCursor(elements.waveformCanvas, ct / dur);
     }
     state.playbackRaf = requestAnimationFrame(tick);
   })();
@@ -716,8 +726,10 @@ function togglePlayback() {
         elements.timeDisplay.textContent = `${formatTime(ct)} / ${formatTime(dur)}`;
         if (state.waveformCache) {
           restoreWaveform();
-          drawPlaybackCursor(elements.waveformCanvas, ct / dur);
+        } else {
+          drawTimeline(elements.waveformCanvas, state.words, state.selectedIndex, state.audioDuration);
         }
+        drawPlaybackCursor(elements.waveformCanvas, ct / dur);
       }
       state.playbackRaf = requestAnimationFrame(tick);
     })();

@@ -380,9 +380,24 @@ button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
 .waveform-group.fullscreen canvas {
   max-width: 100vw;
-  max-height: 90vh;
+  max-height: 80vh;
   width: 100vw;
   height: auto;
+  flex-shrink: 1;
+}
+
+.waveform-group.fullscreen .transport-bar {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  margin-top: 0.5rem;
+}
+
+.waveform-group.fullscreen .transport-btn {
+  color: #fff;
+}
+
+.waveform-group.fullscreen .time-display {
+  color: #ccc;
 }
 
 .transport-bar {

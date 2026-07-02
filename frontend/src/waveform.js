@@ -30,35 +30,36 @@ export function drawEmptyWaveform(canvas, message) {
   ctx.fillText(message, width / 2, height / 2 - 16);
 }
 
-export function drawSimpleWaveform(canvas, totalWords, wordIndex) {
+export function drawTimeline(canvas, words, selectedIndex, audioDuration) {
   const ctx = canvas.getContext("2d");
   const { width, height } = canvas;
   ctx.clearRect(0, 0, width, height);
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "#f8faff";
   ctx.fillRect(0, 0, width, height);
 
-  const segW = width / Math.max(totalWords, 1);
-  for (let i = 0; i < totalWords; i++) {
+  const total = words.length || 1;
+  const segW = width / total;
+
+  for (let i = 0; i < total; i++) {
     const sx = i * segW;
-    const isSelected = i === wordIndex;
-    ctx.fillStyle = isSelected ? "rgba(36, 70, 216, 0.12)" : "rgba(100, 112, 138, 0.05)";
+    const isSelected = i === selectedIndex;
+    ctx.fillStyle = isSelected ? "rgba(36, 70, 216, 0.08)" : "rgba(100, 112, 138, 0.03)";
     ctx.fillRect(sx, 0, segW, height);
-    ctx.strokeStyle = isSelected ? "#2446d8" : "#dfe4f1";
+    ctx.strokeStyle = isSelected ? "#2446d8" : "#d0d5e3";
     ctx.lineWidth = isSelected ? 2 : 1;
     ctx.strokeRect(sx, 0, segW, height);
+
+    ctx.fillStyle = isSelected ? "#2446d8" : "#64708a";
+    ctx.font = isSelected ? "bold 14px system-ui" : "12px system-ui";
+    ctx.textAlign = "center";
+    const label = words[i] || "";
+    ctx.fillText(label, sx + segW / 2, height / 2 + 5);
   }
 
-  ctx.strokeStyle = "#dfe4f1";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(0, height / 2);
-  ctx.lineTo(width, height / 2);
-  ctx.stroke();
-
-  ctx.fillStyle = "#64708a";
-  ctx.font = "16px system-ui";
+  ctx.fillStyle = "rgba(100,112,138,0.5)";
+  ctx.font = "11px system-ui";
   ctx.textAlign = "center";
-  ctx.fillText("Audio decodificado. Reproduce para ver la forma de onda.", width / 2, height / 2 - 16);
+  ctx.fillText(audioDuration ? "Toca la línea de tiempo para buscar" : "Graba tu lectura para ver la forma de onda", width / 2, height - 6);
 }
 
 export function drawWaveformForWord(canvas, audioBuffer, wordIndex, totalWords, phonetic) {
