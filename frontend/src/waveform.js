@@ -30,6 +30,37 @@ export function drawEmptyWaveform(canvas, message) {
   ctx.fillText(message, width / 2, height / 2 - 16);
 }
 
+export function drawSimpleWaveform(canvas, totalWords, wordIndex) {
+  const ctx = canvas.getContext("2d");
+  const { width, height } = canvas;
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, width, height);
+
+  const segW = width / Math.max(totalWords, 1);
+  for (let i = 0; i < totalWords; i++) {
+    const sx = i * segW;
+    const isSelected = i === wordIndex;
+    ctx.fillStyle = isSelected ? "rgba(36, 70, 216, 0.12)" : "rgba(100, 112, 138, 0.05)";
+    ctx.fillRect(sx, 0, segW, height);
+    ctx.strokeStyle = isSelected ? "#2446d8" : "#dfe4f1";
+    ctx.lineWidth = isSelected ? 2 : 1;
+    ctx.strokeRect(sx, 0, segW, height);
+  }
+
+  ctx.strokeStyle = "#dfe4f1";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, height / 2);
+  ctx.lineTo(width, height / 2);
+  ctx.stroke();
+
+  ctx.fillStyle = "#64708a";
+  ctx.font = "16px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText("Audio decodificado. Reproduce para ver la forma de onda.", width / 2, height / 2 - 16);
+}
+
 export function drawWaveformForWord(canvas, audioBuffer, wordIndex, totalWords, phonetic) {
   const ctx = canvas.getContext("2d");
   const { width, height } = canvas;

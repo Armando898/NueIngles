@@ -1,6 +1,6 @@
 import { createProvider, getWords, cleanWord } from "./providers.js";
 import { RecorderController, decodeAudioBlob, speakWord, loadVoices, chooseVoice } from "./audio.js";
-import { drawEmptyWaveform, drawWaveformForWord, drawReferenceWaveform, drawPlaybackCursor } from "./waveform.js";
+import { drawEmptyWaveform, drawWaveformForWord, drawReferenceWaveform, drawPlaybackCursor, drawSimpleWaveform } from "./waveform.js";
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -379,10 +379,15 @@ function selectWord(index) {
   drawReferenceWaveform(elements.refWaveformCanvas, pronunciation);
 
   const buffer = state.singleWordBuffer || state.audioBuffer;
+  resizeCanvasForDisplay();
   if (buffer) {
     const isSingle = !!state.singleWordBuffer;
     drawWaveformForWord(elements.waveformCanvas, buffer, isSingle ? 0 : index, isSingle ? 1 : state.words.length, pronunciation);
     cacheWaveform();
+    elements.expandWaveformBtn.disabled = false;
+  } else if (getPlaybackUrl()) {
+    drawSimpleWaveform(elements.waveformCanvas, state.words.length, index);
+    state.waveformCache = null;
     elements.expandWaveformBtn.disabled = false;
   } else {
     drawEmptyWaveform(elements.waveformCanvas, "Graba tu lectura para ver la forma de onda de esta palabra.");
@@ -403,15 +408,29 @@ function toggleWaveformExpand() {
   } else {
     group.classList.add("fullscreen");
     elements.expandWaveformBtn.textContent = "Cerrar";
-    elements.waveformCanvas.style.maxWidth = "100vw";
-    elements.waveformCanvas.style.maxHeight = "90vh";
-    elements.waveformCanvas.style.width = "100vw";
-    elements.waveformCanvas.style.height = "auto";
     document.body.style.overflow = "hidden";
   }
-  setTimeout(() => {
-    if (state.waveformCache) restoreWaveform();
-  }, 50);
+  setTimeout(() => resizeCanvasForDisplay(), 100);
+}
+
+function resizeCanvasForDisplay() {
+  const canvas = elements.waveformCanvas;
+  const rect = canvas.getBoundingClientRect();
+  const w = Math.round(rect.width);
+  const h = Math.round(rect.height);
+  if (w > 0 && h > 0 && (canvas.width !== w || canvas.height !== h)) {
+    canvas.width = w;
+    canvas.height = h;
+    const buffer = state.singleWordBuffer || state.audioBuffer;
+    if (buffer && state.selectedIndex !== null) {
+      const isSingle = !!state.singleWordBuffer;
+      const pron = state.pronunciations[state.selectedIndex]?.phonetic || "";
+      drawWaveformForWord(canvas, buffer, isSingle ? 0 : state.selectedIndex, isSingle ? 1 : state.words.length, pron);
+      cacheWaveform();
+    } else if (state.waveformCache) {
+      restoreWaveform();
+    }
+  }
 }
 
 function playExpectedPronunciation() {
