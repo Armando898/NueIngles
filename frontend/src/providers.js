@@ -6494,16 +6494,22 @@ const simplifiedPronunciations = new Map([
   ["question", "kués-chon"],
   ["quick", "kuík"],
   ["quickly", "kuík-li"],
-  ["garbage", "gár-bich"],
-  ["village", "ví-lich"],
-  ["language", "lán-guich"],
-  ["message", "mé-sich"],
-  ["package", "pá-keich"],
-  ["damage", "dá-mich"],
-  ["manage", "má-nich"],
-  ["image", "í-mich"],
-  ["storage", "stó-rich"],
-  ["average", "á-ve-rich"]
+  ["age", "eich"],
+  ["page", "peich"],
+  ["stage", "steich"],
+  ["cage", "keich"],
+  ["rage", "reich"],
+  ["wage", "ueich"],
+  ["garbage", "gár-bij"],
+  ["village", "ví-lij"],
+  ["language", "lán-guij"],
+  ["message", "mé-sij"],
+  ["package", "pá-kij"],
+  ["damage", "dá-mij"],
+  ["manage", "má-nij"],
+  ["image", "í-mij"],
+  ["storage", "stó-rij"],
+  ["average", "á-ve-rij"]
 ]);
 
 export function getWords(text) {
@@ -6687,6 +6693,7 @@ export function getSimplifiedPronunciation(word) {
   pron = pron.replace(/iring\b/gi, "áiring");
 
   // Common endings
+  pron = pron.replace(/age\b/gi, "ij");
   pron = pron.replace(/tion\b/gi, "shon");
   pron = pron.replace(/sion\b/gi, "yon");
   pron = pron.replace(/ture\b/gi, "chur");
