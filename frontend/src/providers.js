@@ -6493,7 +6493,17 @@ const simplifiedPronunciations = new Map([
   ["queen", "kuíin"],
   ["question", "kués-chon"],
   ["quick", "kuík"],
-  ["quickly", "kuík-li"]
+  ["quickly", "kuík-li"],
+  ["garbage", "gár-bich"],
+  ["village", "ví-lich"],
+  ["language", "lán-guich"],
+  ["message", "mé-sich"],
+  ["package", "pá-keich"],
+  ["damage", "dá-mich"],
+  ["manage", "má-nich"],
+  ["image", "í-mich"],
+  ["storage", "stó-rich"],
+  ["average", "á-ve-rich"]
 ]);
 
 export function getWords(text) {
