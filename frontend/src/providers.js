@@ -6474,7 +6474,18 @@ const simplifiedPronunciations = new Map([
   ["database", "déi-ta-beis"],
   ["application", "a-pli-kéi-shon"],
   ["software", "sóft-uer"],
-  ["hardware", "járd-uer"]
+  ["hardware", "járd-uer"],
+  ["tired", "táierd"],
+  ["fire", "fáier"],
+  ["hire", "háier"],
+  ["wire", "uáier"],
+  ["entire", "en-táier"],
+  ["desire", "di-sáier"],
+  ["acquire", "a-kuáier"],
+  ["require", "ri-kuáier"],
+  ["retire", "ri-táier"],
+  ["inspired", "in-spáierd"],
+  ["inspiring", "in-spái-ring"]
 ]);
 
 export function getWords(text) {
@@ -6649,6 +6660,12 @@ export function getSimplifiedPronunciation(word) {
   pron = pron.replace(/ch/gi, "ch");
   pron = pron.replace(/j/gi, "y");
   pron = pron.replace(/w/gi, "u");
+
+  // Long i patterns (consonant + ire)
+  pron = pron.replace(/ire\b/gi, "áier");
+  pron = pron.replace(/ired\b/gi, "áierd");
+  pron = pron.replace(/ires\b/gi, "áiers");
+  pron = pron.replace(/iring\b/gi, "áiring");
 
   // Common endings
   pron = pron.replace(/tion\b/gi, "shon");
