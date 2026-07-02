@@ -6509,7 +6509,15 @@ const simplifiedPronunciations = new Map([
   ["manage", "má-nij"],
   ["image", "í-mij"],
   ["storage", "stó-rij"],
-  ["average", "á-ve-rij"]
+  ["average", "á-ve-rij"],
+  ["arrive", "a-rráiv"],
+  ["arrived", "a-rráivd"],
+  ["drive", "dráiv"],
+  ["drove", "dróuv"],
+  ["survive", "sur-váiv"],
+  ["alive", "a-láiv"],
+  ["live", "lív"],
+  ["give", "guív"]
 ]);
 
 export function getWords(text) {
@@ -6694,6 +6702,10 @@ export function getSimplifiedPronunciation(word) {
 
   // Common endings
   pron = pron.replace(/age\b/gi, "ij");
+  pron = pron.replace(/rive\b/gi, "ráiv");
+  pron = pron.replace(/rived\b/gi, "ráivd");
+  pron = pron.replace(/vive\b/gi, "váiv");
+  pron = pron.replace(/vived\b/gi, "váivd");
   pron = pron.replace(/tion\b/gi, "shon");
   pron = pron.replace(/sion\b/gi, "yon");
   pron = pron.replace(/ture\b/gi, "chur");
