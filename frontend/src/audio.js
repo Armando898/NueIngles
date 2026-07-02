@@ -116,11 +116,28 @@ export class RecorderController {
   }
 }
 
+let _sharedAudioCtx = null;
+function getAudioContext() {
+  if (!_sharedAudioCtx) _sharedAudioCtx = new AudioContext();
+  if (_sharedAudioCtx.state === "suspended") _sharedAudioCtx.resume();
+  return _sharedAudioCtx;
+}
+
 export async function decodeAudioBlob(blob) {
   const arrayBuffer = await blob.arrayBuffer();
-  const audioContext = new AudioContext();
-  const audioBuffer = await audioContext.decodeAudioData(arrayBuffer.slice(0));
-  return audioBuffer;
+  try {
+    const ctx = getAudioContext();
+    const audioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
+    return audioBuffer;
+  } catch (firstErr) {
+    try {
+      const fallbackCtx = new OfflineAudioContext(1, 1, 44100);
+      const audioBuffer = await fallbackCtx.decodeAudioData(arrayBuffer.slice(0));
+      return audioBuffer;
+    } catch (secondErr) {
+      throw new Error("No se pudo decodificar el audio");
+    }
+  }
 }
 
 let _lastUtterance = null;

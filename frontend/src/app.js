@@ -398,13 +398,20 @@ function toggleWaveformExpand() {
   const isExpanded = group.classList.contains("fullscreen");
   if (isExpanded) {
     group.classList.remove("fullscreen");
-    elements.expandWaveformBtn.textContent = "🔍 Ampliar";
+    elements.expandWaveformBtn.textContent = "Ampliar";
+    document.body.style.overflow = "";
   } else {
     group.classList.add("fullscreen");
-    elements.expandWaveformBtn.textContent = "✕ Cerrar";
-    elements.waveformCanvas.style.maxWidth = "95vw";
-    elements.waveformCanvas.style.maxHeight = "85vh";
+    elements.expandWaveformBtn.textContent = "Cerrar";
+    elements.waveformCanvas.style.maxWidth = "100vw";
+    elements.waveformCanvas.style.maxHeight = "90vh";
+    elements.waveformCanvas.style.width = "100vw";
+    elements.waveformCanvas.style.height = "auto";
+    document.body.style.overflow = "hidden";
   }
+  setTimeout(() => {
+    if (state.waveformCache) restoreWaveform();
+  }, 50);
 }
 
 function playExpectedPronunciation() {
@@ -480,9 +487,7 @@ async function retrySelectedWord() {
       state.singleWordBlob = singleBlob;
       elements.playRecordingBtn.disabled = false;
       try {
-        const arrayBuffer = await singleBlob.arrayBuffer();
-        const audioContext = new AudioContext();
-        state.singleWordBuffer = await audioContext.decodeAudioData(arrayBuffer.slice(0));
+        state.singleWordBuffer = await decodeAudioBlob(singleBlob);
       } catch (_) { /* waveform no disponible */ }
 
       if (stream) stream.getTracks().forEach((t) => t.stop());
@@ -645,7 +650,7 @@ function stopPlayback() {
     state.playbackRaf = null;
   }
   elements.playBtn.textContent = "\u25B6";
-  restoreWaveform();
+  if (state.waveformCache) restoreWaveform();
 }
 
 function startPlayback() {
