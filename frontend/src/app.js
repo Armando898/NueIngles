@@ -66,12 +66,28 @@ const state = {
 init();
 
 async function init() {
+  restoreSettings();
   state.provider = createProvider(getProviderConfig());
   drawEmptyWaveform(elements.waveformCanvas);
   bindEvents();
   state.voices = await loadVoices();
   renderVoiceOptions();
   refreshProvider();
+}
+
+function restoreSettings() {
+  const savedProvider = localStorage.getItem("provider");
+  if (savedProvider) elements.providerSelect.value = savedProvider;
+  const savedToken = localStorage.getItem("apiToken");
+  if (savedToken) elements.apiToken.value = savedToken;
+  const savedEndpoint = localStorage.getItem("customEndpoint");
+  if (savedEndpoint) elements.customEndpoint.value = savedEndpoint;
+}
+
+function saveSettings() {
+  localStorage.setItem("provider", elements.providerSelect.value);
+  localStorage.setItem("apiToken", elements.apiToken.value);
+  localStorage.setItem("customEndpoint", elements.customEndpoint.value);
 }
 
 function bindEvents() {
@@ -89,9 +105,10 @@ function bindEvents() {
     }
   });
   elements.retryWordBtn.addEventListener("click", retrySelectedWord);
-  elements.providerSelect.addEventListener("change", refreshProvider);
-  elements.customEndpoint.addEventListener("change", refreshProvider);
-  elements.apiToken.addEventListener("change", refreshProvider);
+  elements.providerSelect.addEventListener("change", () => { saveSettings(); refreshProvider(); });
+  elements.customEndpoint.addEventListener("change", () => { saveSettings(); refreshProvider(); });
+  elements.apiToken.addEventListener("change", () => { saveSettings(); refreshProvider(); });
+  elements.apiToken.addEventListener("input", saveSettings);
   elements.voiceProfileGroup.addEventListener("click", (e) => {
     const btn = e.target.closest(".voice-btn");
     if (!btn) return;
