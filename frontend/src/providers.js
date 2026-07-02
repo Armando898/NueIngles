@@ -5691,7 +5691,7 @@ const simplifiedPronunciations = new Map([
   ["always", "ól-ueis"],
   ["am", "am"],
   ["an", "an"],
-  ["and", "and"],
+  ["and", "an"],
   ["answer", "án-ser"],
   ["any", "é-ni"],
   ["are", "ar"],
