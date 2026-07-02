@@ -1,6 +1,6 @@
 import { createProvider, getWords, cleanWord } from "./providers.js";
 import { RecorderController, decodeAudioBlob, speakWord, loadVoices, chooseVoice } from "./audio.js";
-import { drawEmptyWaveform, drawWaveformForWord, drawReferenceWaveform } from "./waveform.js";
+import { drawEmptyWaveform, drawWaveformForWord, drawReferenceWaveform, drawPlaybackCursor } from "./waveform.js";
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -39,7 +39,11 @@ const elements = {
   voiceSelect: $("#voiceSelect"),
   toggleConfig: $("#toggleConfig"),
   configPanel: $("#configPanel"),
-  speedControls: $("#speedControls")
+  speedControls: $("#speedControls"),
+  rewindBtn: $("#rewindBtn"),
+  playBtn: $("#playBtn"),
+  forwardBtn: $("#forwardBtn"),
+  timeDisplay: $("#timeDisplay")
 };
 
 const state = {
@@ -60,7 +64,10 @@ const state = {
   speed: "normal",
   singleWordBlob: null,
   singleWordBuffer: null,
-  singleWordUrl: null
+  singleWordUrl: null,
+  playbackAudio: null,
+  playbackRaf: null,
+  waveformCache: null
 };
 
 init();
@@ -133,6 +140,11 @@ function bindEvents() {
       startKaraokeTimer();
     }
   });
+
+  elements.rewindBtn.addEventListener("click", () => skipPlayback(-5));
+  elements.forwardBtn.addEventListener("click", () => skipPlayback(5));
+  elements.playBtn.addEventListener("click", togglePlayback);
+  elements.waveformCanvas.addEventListener("click", seekFromClick);
 }
 
 function getProviderConfig() {
@@ -361,15 +373,20 @@ function selectWord(index) {
   elements.playExpectedBtn.disabled = false;
   elements.retryWordBtn.disabled = false;
 
+  if (getPlaybackUrl()) enableTransport();
+  else disableTransport();
+
   drawReferenceWaveform(elements.refWaveformCanvas, pronunciation);
 
   const buffer = state.singleWordBuffer || state.audioBuffer;
   if (buffer) {
     const isSingle = !!state.singleWordBuffer;
     drawWaveformForWord(elements.waveformCanvas, buffer, isSingle ? 0 : index, isSingle ? 1 : state.words.length, pronunciation);
+    cacheWaveform();
     elements.expandWaveformBtn.disabled = false;
   } else {
     drawEmptyWaveform(elements.waveformCanvas, "Graba tu lectura para ver la forma de onda de esta palabra.");
+    state.waveformCache = null;
     elements.expandWaveformBtn.disabled = true;
   }
 
@@ -506,10 +523,13 @@ function resetEvaluation() {
   state.singleWordBuffer = null;
   state.singleWordUrl = null;
   state.selectedIndex = null;
+  state.waveformCache = null;
+  stopPlayback();
   elements.selectedWordPanel.textContent = "No hay ninguna palabra seleccionada.";
   elements.selectedWordPanel.classList.add("empty");
   elements.playExpectedBtn.disabled = true;
   elements.playRecordingBtn.disabled = true;
+  disableTransport();
   elements.retryWordBtn.disabled = true;
   elements.recordingStatus.textContent = "Sin grabar";
   renderWordGrid();
@@ -570,6 +590,139 @@ function renderVoiceOptions(forcePreferred = false) {
 function getSelectedVoice() {
   const selectedName = elements.voiceSelect.value;
   return state.voices.find((voice) => voice.name === selectedName) || chooseVoice(state.voices, elements.voiceProfile.value);
+}
+
+function getPlaybackUrl() {
+  return state.singleWordUrl || state.audioUrl;
+}
+
+function cacheWaveform() {
+  const canvas = elements.waveformCanvas;
+  if (!canvas) return;
+  state.waveformCache = document.createElement("canvas");
+  state.waveformCache.width = canvas.width;
+  state.waveformCache.height = canvas.height;
+  state.waveformCache.getContext("2d").drawImage(canvas, 0, 0);
+}
+
+function restoreWaveform() {
+  if (!state.waveformCache) return;
+  const ctx = elements.waveformCanvas.getContext("2d");
+  ctx.clearRect(0, 0, elements.waveformCanvas.width, elements.waveformCanvas.height);
+  ctx.drawImage(state.waveformCache, 0, 0);
+}
+
+function formatTime(s) {
+  if (!s || !isFinite(s)) return "0:00";
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, "0")}`;
+}
+
+function enableTransport() {
+  elements.rewindBtn.disabled = false;
+  elements.playBtn.disabled = false;
+  elements.forwardBtn.disabled = false;
+  elements.playBtn.textContent = "\u25B6";
+  elements.timeDisplay.textContent = "0:00 / --:--";
+}
+
+function disableTransport() {
+  elements.rewindBtn.disabled = true;
+  elements.playBtn.disabled = true;
+  elements.forwardBtn.disabled = true;
+  elements.playBtn.textContent = "\u25B6";
+  elements.timeDisplay.textContent = "--:-- / --:--";
+}
+
+function stopPlayback() {
+  if (state.playbackAudio) {
+    state.playbackAudio.pause();
+    state.playbackAudio = null;
+  }
+  if (state.playbackRaf) {
+    cancelAnimationFrame(state.playbackRaf);
+    state.playbackRaf = null;
+  }
+  elements.playBtn.textContent = "\u25B6";
+  restoreWaveform();
+}
+
+function startPlayback() {
+  stopPlayback();
+  const url = getPlaybackUrl();
+  if (!url) return;
+  state.playbackAudio = new Audio(url);
+  state.playbackAudio.addEventListener("ended", stopPlayback);
+  state.playbackAudio.play().catch(() => {});
+  elements.playBtn.textContent = "\u23F8";
+  (function tick() {
+    if (!state.playbackAudio || state.playbackAudio.paused) return;
+    const ct = state.playbackAudio.currentTime;
+    const dur = state.playbackAudio.duration;
+    if (dur) {
+      elements.timeDisplay.textContent = `${formatTime(ct)} / ${formatTime(dur)}`;
+      if (state.waveformCache) {
+        restoreWaveform();
+        drawPlaybackCursor(elements.waveformCanvas, ct / dur);
+      }
+    }
+    state.playbackRaf = requestAnimationFrame(tick);
+  })();
+}
+
+function togglePlayback() {
+  if (state.playbackAudio && !state.playbackAudio.paused) {
+    state.playbackAudio.pause();
+    elements.playBtn.textContent = "\u25B6";
+    if (state.playbackRaf) {
+      cancelAnimationFrame(state.playbackRaf);
+      state.playbackRaf = null;
+    }
+    return;
+  }
+  if (state.playbackAudio && state.playbackAudio.paused) {
+    state.playbackAudio.play().catch(() => {});
+    elements.playBtn.textContent = "\u23F8";
+    (function tick() {
+      if (!state.playbackAudio || state.playbackAudio.paused) return;
+      const ct = state.playbackAudio.currentTime;
+      const dur = state.playbackAudio.duration;
+      if (dur) {
+        elements.timeDisplay.textContent = `${formatTime(ct)} / ${formatTime(dur)}`;
+        if (state.waveformCache) {
+          restoreWaveform();
+          drawPlaybackCursor(elements.waveformCanvas, ct / dur);
+        }
+      }
+      state.playbackRaf = requestAnimationFrame(tick);
+    })();
+    return;
+  }
+  startPlayback();
+}
+
+function skipPlayback(sec) {
+  if (!state.playbackAudio) { startPlayback(); return; }
+  const dur = state.playbackAudio.duration || 0;
+  state.playbackAudio.currentTime = Math.max(0, Math.min(dur, state.playbackAudio.currentTime + sec));
+}
+
+function seekFromClick(e) {
+  const canvas = e.currentTarget;
+  const rect = canvas.getBoundingClientRect();
+  const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  if (state.playbackAudio && state.playbackAudio.duration) {
+    state.playbackAudio.currentTime = ratio * state.playbackAudio.duration;
+  } else if (getPlaybackUrl()) {
+    startPlayback();
+    const wait = () => {
+      if (state.playbackAudio && state.playbackAudio.duration) {
+        state.playbackAudio.currentTime = ratio * state.playbackAudio.duration;
+      } else { requestAnimationFrame(wait); }
+    };
+    requestAnimationFrame(wait);
+  }
 }
 
 function escapeHtml(value) {

@@ -648,3 +648,20 @@ export function drawReferenceWaveform(canvas, phonetic) {
   ctx.textAlign = "left";
   ctx.fillText("Espectrograma de referencia", 8, height - 2);
 }
+
+export function drawPlaybackCursor(canvas, progress) {
+  if (!canvas || progress <= 0 || progress >= 1) return;
+  const ctx = canvas.getContext("2d");
+  const { width, height } = canvas;
+  const x = Math.round(progress * width);
+  ctx.save();
+  ctx.strokeStyle = "#ff0040";
+  ctx.lineWidth = 3;
+  ctx.shadowColor = "rgba(255,0,64,0.6)";
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.moveTo(x, 0);
+  ctx.lineTo(x, height);
+  ctx.stroke();
+  ctx.restore();
+}
