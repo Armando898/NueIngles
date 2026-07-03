@@ -150,11 +150,11 @@ export async function decodeAudioBlob(blob) {
 
 let _lastUtterance = null;
 
-export function speakWord(word, { voice, rate = 0.86, pitch = 1, provider } = {}) {
+export async function speakWord(word, { voice, rate = 0.86, pitch = 1, provider } = {}) {
   if (!word) return;
   if (provider?.synthesizeSpeech) {
     try {
-      provider.synthesizeSpeech(word, { voice, rate, pitch });
+      await provider.synthesizeSpeech(word, { voice, rate, pitch });
       return;
     } catch (_) { /* fall through to browser synthesis */ }
   }
