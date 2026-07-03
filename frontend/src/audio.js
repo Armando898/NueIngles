@@ -118,22 +118,30 @@ export class RecorderController {
 
 let _sharedAudioCtx = null;
 function getAudioContext() {
-  if (!_sharedAudioCtx) _sharedAudioCtx = new AudioContext();
-  if (_sharedAudioCtx.state === "suspended") _sharedAudioCtx.resume();
-  return _sharedAudioCtx;
+  try {
+    if (!_sharedAudioCtx || _sharedAudioCtx.state === "closed") {
+      const Ctor = window.AudioContext || window.webkitAudioContext;
+      if (!Ctor) return null;
+      _sharedAudioCtx = new Ctor();
+    }
+    if (_sharedAudioCtx.state === "suspended") _sharedAudioCtx.resume();
+    return _sharedAudioCtx;
+  } catch (_) {
+    return null;
+  }
 }
 
 export async function decodeAudioBlob(blob) {
+  if (!blob || blob.size < 100) throw new Error("Grabación demasiado corta");
   const arrayBuffer = await blob.arrayBuffer();
+  const ctx = getAudioContext();
+  if (!ctx) throw new Error("AudioContext no disponible");
   try {
-    const ctx = getAudioContext();
-    const audioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
-    return audioBuffer;
+    return await ctx.decodeAudioData(arrayBuffer.slice(0));
   } catch (firstErr) {
     try {
       const fallbackCtx = new OfflineAudioContext(1, 1, 44100);
-      const audioBuffer = await fallbackCtx.decodeAudioData(arrayBuffer.slice(0));
-      return audioBuffer;
+      return await fallbackCtx.decodeAudioData(arrayBuffer.slice(0));
     } catch (secondErr) {
       throw new Error("No se pudo decodificar el audio");
     }

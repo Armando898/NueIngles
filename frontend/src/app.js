@@ -389,9 +389,15 @@ function selectWord(index) {
     drawTimeline(elements.waveformCanvas, state.words, index, state.audioDuration);
     if (buffer) {
       const isSingle = !!state.singleWordBuffer;
-      drawWaveformForWord(elements.waveformCanvas, buffer, isSingle ? 0 : index, isSingle ? 1 : state.words.length, pronunciation);
-      cacheWaveform();
+      try {
+        drawWaveformForWord(elements.waveformCanvas, buffer, isSingle ? 0 : index, isSingle ? 1 : state.words.length, pronunciation);
+        cacheWaveform();
+      } catch (err) {
+        console.error("Error dibujando forma de onda:", err);
+        state.waveformCache = null;
+      }
     } else {
+      drawEmptyWaveform(elements.waveformCanvas, "No se pudo analizar el audio. Prueba grabando de nuevo.");
       state.waveformCache = null;
     }
     elements.expandWaveformBtn.disabled = false;
