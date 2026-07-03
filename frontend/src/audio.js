@@ -158,16 +158,20 @@ export function speakWord(word, { voice, rate = 0.86, pitch = 1, provider } = {}
       return;
     } catch (_) { /* fall through to browser synthesis */ }
   }
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.getVoices();
-  const utterance = new SpeechSynthesisUtterance(word);
-  utterance.lang = "en-US";
-  utterance.rate = rate;
-  utterance.pitch = pitch;
-  if (voice) utterance.voice = voice;
-  utterance.onerror = () => {};
-  _lastUtterance = utterance;
-  window.speechSynthesis.speak(utterance);
+  if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === "undefined") return;
+  try {
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.getVoices();
+    const utterance = new SpeechSynthesisUtterance(word);
+    utterance.lang = "en-US";
+    utterance.rate = rate;
+    utterance.pitch = pitch;
+    utterance.volume = 1;
+    if (voice) utterance.voice = voice;
+    utterance.onerror = () => {};
+    _lastUtterance = utterance;
+    setTimeout(() => window.speechSynthesis.speak(utterance), 50);
+  } catch (_) { /* speech synthesis not available */ }
 }
 
 export function loadVoices() {
