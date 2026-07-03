@@ -323,6 +323,7 @@ async function handleAudioReady({ blob, url, transcript }) {
 
   try {
     state.audioBuffer = await decodeAudioBlob(blob);
+    state.audioDuration = state.audioBuffer.duration;
   } catch (error) {
     console.warn("No se pudo decodificar el audio para dibujar forma de onda", error);
   }
@@ -386,7 +387,6 @@ function selectWord(index) {
   const hasAudio = !!getPlaybackUrl();
   if (hasAudio) {
     drawTimeline(elements.waveformCanvas, state.words, index, state.audioDuration);
-    const buffer = state.singleWordBuffer || state.audioBuffer;
     if (buffer) {
       const isSingle = !!state.singleWordBuffer;
       drawWaveformForWord(elements.waveformCanvas, buffer, isSingle ? 0 : index, isSingle ? 1 : state.words.length, pronunciation);
