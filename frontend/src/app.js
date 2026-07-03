@@ -126,6 +126,9 @@ function bindEvents() {
   });
   elements.toggleConfig.addEventListener("click", toggleConfigPanel);
   elements.expandWaveformBtn.addEventListener("click", toggleWaveformExpand);
+  document.addEventListener("fullscreenchange", onFullscreenChange);
+  document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+  window.addEventListener("resize", onResize);
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && elements.userGroup.classList.contains("fullscreen")) toggleWaveformExpand();
   });
@@ -404,18 +407,45 @@ function selectWord(index) {
 function toggleWaveformExpand(e) {
   if (e) e.stopPropagation();
   const group = elements.userGroup;
-  const isExpanded = group.classList.contains("fullscreen");
-  if (isExpanded) {
-    group.classList.remove("fullscreen");
+  const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  if (isFs) {
+    exitFullscreen();
+    return;
+  }
+  if (state.playbackAudio) stopPlayback();
+  group.classList.add("fullscreen");
+  elements.expandWaveformBtn.textContent = "Cerrar";
+  document.body.style.overflow = "hidden";
+  if (group.requestFullscreen) {
+    group.requestFullscreen({ navigationUI: "hide" }).catch(() => {});
+  } else if (group.webkitRequestFullscreen) {
+    group.webkitRequestFullscreen();
+  }
+  setTimeout(() => resizeCanvasForDisplay(), 150);
+}
+
+function exitFullscreen() {
+  if (document.exitFullscreen) {
+    document.exitFullscreen().catch(() => {});
+  } else if (document.webkitExitFullscreen) {
+    document.webkitExitFullscreen();
+  }
+}
+
+function onFullscreenChange() {
+  const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  if (!isFs) {
+    elements.userGroup.classList.remove("fullscreen");
     elements.expandWaveformBtn.textContent = "Ampliar";
     document.body.style.overflow = "";
-  } else {
-    if (state.playbackAudio) stopPlayback();
-    group.classList.add("fullscreen");
-    elements.expandWaveformBtn.textContent = "Cerrar";
-    document.body.style.overflow = "hidden";
+    setTimeout(() => resizeCanvasForDisplay(), 150);
   }
-  setTimeout(() => resizeCanvasForDisplay(), 100);
+}
+
+function onResize() {
+  if (state.selectedIndex !== null) {
+    resizeCanvasForDisplay();
+  }
 }
 
 function resizeCanvasForDisplay() {

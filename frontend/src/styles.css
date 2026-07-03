@@ -361,7 +361,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
   z-index: 2;
 }
 
-.waveform-group.fullscreen {
+.waveform-group.fullscreen,
+.waveform-group:fullscreen {
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -371,32 +372,40 @@ button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  width: 100vw;
+  height: 100vh;
 }
 
-.waveform-group.fullscreen .waveform-label {
+.waveform-group.fullscreen .waveform-label,
+.waveform-group:fullscreen .waveform-label {
   color: #fff;
   font-size: 1rem;
 }
 
-.waveform-group.fullscreen canvas {
+.waveform-group.fullscreen canvas,
+.waveform-group:fullscreen canvas {
   max-width: 100vw;
-  max-height: 80vh;
-  width: 100vw;
+  max-height: calc(100vh - 7rem);
+  width: 100%;
   height: auto;
   flex-shrink: 1;
+  object-fit: contain;
 }
 
-.waveform-group.fullscreen .transport-bar {
+.waveform-group.fullscreen .transport-bar,
+.waveform-group:fullscreen .transport-bar {
   background: rgba(255,255,255,0.1);
   border: 1px solid rgba(255,255,255,0.2);
   margin-top: 0.5rem;
 }
 
-.waveform-group.fullscreen .transport-btn {
+.waveform-group.fullscreen .transport-btn,
+.waveform-group:fullscreen .transport-btn {
   color: #fff;
 }
 
-.waveform-group.fullscreen .time-display {
+.waveform-group.fullscreen .time-display,
+.waveform-group:fullscreen .time-display {
   color: #ccc;
 }
 

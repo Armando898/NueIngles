@@ -682,7 +682,7 @@ export function drawReferenceWaveform(canvas, phonetic) {
 }
 
 export function drawPlaybackCursor(canvas, progress) {
-  if (!canvas || progress <= 0 || progress >= 1) return;
+  if (!canvas || progress < 0 || progress > 1) return;
   const ctx = canvas.getContext("2d");
   const { width, height } = canvas;
   const x = Math.round(progress * width);
