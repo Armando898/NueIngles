@@ -1241,6 +1241,9 @@ async function serveStatic(req, res) {
   }
 
   const mime = MIME_TYPES[extname(filePath)] || "application/octet-stream";
-  res.writeHead(200, { "Content-Type": mime });
+  const cacheControl = extname(filePath) === ".js" || extname(filePath) === ".html" || extname(filePath) === ".css"
+    ? "no-cache, no-store, must-revalidate"
+    : "public, max-age=3600";
+  res.writeHead(200, { "Content-Type": mime, "Cache-Control": cacheControl });
   createReadStream(filePath).pipe(res);
 }
