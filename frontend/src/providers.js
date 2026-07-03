@@ -5683,6 +5683,8 @@ const fallbackTranslations = new Map([
 
 const simplifiedPronunciations = new Map([
   ["a", "a / ei"],
+  ["abilities", "a-bi-li-tiz"],
+  ["ability", "a-bí-li-ti"],
   ["about", "a-báut"],
   ["accept", "ak-sépt"],
   ["after", "áf-ter"],
@@ -5740,6 +5742,7 @@ const simplifiedPronunciations = new Map([
   ["complete", "kom-plíit"],
   ["confidence", "kón-fi-dens"],
   ["consider", "kon-sí-der"],
+  ["considered", "kon-sí-derd"],
   ["continue", "kon-tí-niu"],
   ["control", "kon-tróul"],
   ["cook", "kuk"],
@@ -6547,6 +6550,9 @@ const simplifiedPronunciations = new Map([
   ["advertisement", "ad-vér-tis-ment"],
   ["affordable", "a-fór-da-bl"],
   ["agreement", "a-gríi-ment"],
+  ["aggressor", "ut-grés-er"],
+  ["aggressors", "ut-gré-sers"],
+  ["aggressive", "ut-gré-siv"],
   ["allowance", "a-láu-ans"],
   ["amazing", "a-méi-sing"],
   ["ambassador", "am-bá-sa-dor"],
