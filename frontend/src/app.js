@@ -333,7 +333,11 @@ async function handleAudioReady({ blob, url, transcript }) {
   renderWordGrid();
   renderKaraokeLine();
   updateResults();
-  if (state.selectedIndex !== null) selectWord(state.selectedIndex);
+  if (state.selectedIndex !== null) {
+    selectWord(state.selectedIndex);
+  } else if (state.words.length > 0) {
+    selectWord(0);
+  }
 }
 
 function startKaraokeTimer() {
