@@ -407,9 +407,17 @@ function selectWord(index) {
 function toggleWaveformExpand(e) {
   if (e) e.stopPropagation();
   const group = elements.userGroup;
-  const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-  if (isFs) {
-    exitFullscreen();
+  const hasClass = group.classList.contains("fullscreen");
+  const isFsApi = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  if (hasClass || isFsApi) {
+    if (isFsApi) {
+      if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
+    group.classList.remove("fullscreen");
+    elements.expandWaveformBtn.textContent = "Ampliar";
+    document.body.style.overflow = "";
+    setTimeout(() => resizeCanvasForDisplay(), 150);
     return;
   }
   if (state.playbackAudio) stopPlayback();
@@ -424,22 +432,12 @@ function toggleWaveformExpand(e) {
   setTimeout(() => resizeCanvasForDisplay(), 150);
 }
 
-function exitFullscreen() {
-  if (document.exitFullscreen) {
-    document.exitFullscreen().catch(() => {});
-  } else if (document.webkitExitFullscreen) {
-    document.webkitExitFullscreen();
-  }
-}
-
 function onFullscreenChange() {
-  const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-  if (!isFs) {
-    elements.userGroup.classList.remove("fullscreen");
-    elements.expandWaveformBtn.textContent = "Ampliar";
-    document.body.style.overflow = "";
-    setTimeout(() => resizeCanvasForDisplay(), 150);
-  }
+  if (document.fullscreenElement || document.webkitFullscreenElement) return;
+  elements.userGroup.classList.remove("fullscreen");
+  elements.expandWaveformBtn.textContent = "Ampliar";
+  document.body.style.overflow = "";
+  setTimeout(() => resizeCanvasForDisplay(), 150);
 }
 
 function onResize() {
